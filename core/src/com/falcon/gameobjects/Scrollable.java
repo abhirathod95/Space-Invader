@@ -5,8 +5,7 @@ import com.badlogic.gdx.math.Vector2;
 public class Scrollable {
 
 	// Protected is similar to private, but allows inheritance by subclasses.
-	protected Vector2 position;
-	protected Vector2 velocity;
+	protected Vector2 position, velocity, accel;
 	protected int width;
 	protected int height;
 	protected boolean isScrolledDown;
@@ -14,14 +13,16 @@ public class Scrollable {
 	public Scrollable(float x, float y, int width, int height, float scrollSpeed) {
 		position = new Vector2(x, y);
 		velocity = new Vector2(0, scrollSpeed);
+		accel = new Vector2(0,7);
 		this.width = width;
 		this.height = height;
 		isScrolledDown = false;
 	}
 
 	public void update(float delta) {
+		velocity.add(accel.cpy().scl(delta));
 		position.add(velocity.cpy().scl(delta));
-
+		
 		// If the Scrollable object is no longer visible:
 		if (position.y > 204) {
 			isScrolledDown = true;
@@ -58,4 +59,5 @@ public class Scrollable {
 	public int getHeight() {
 		return height;
 	}
+	
 }

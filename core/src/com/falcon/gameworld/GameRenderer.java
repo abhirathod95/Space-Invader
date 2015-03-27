@@ -92,9 +92,9 @@ public class GameRenderer {
 			shapeRenderer.setColor(255 / 255.0f, 255 / 255.0f, 0 / 255.0f, 1);
 			shapeRenderer.rect(p.getX(), p.getY(), p.getWidth(), p.getHeight());
 
-//			Draws  the bounding rectangles for the projectiles
-//			shapeRenderer.setColor(Color.GREEN);
-//			shapeRenderer.rect(p.getBoundingRectangle().x, p.getBoundingRectangle().y, p.getBoundingRectangle().width, p.getBoundingRectangle().height);
+			//			Draws  the bounding rectangles for the projectiles
+			//			shapeRenderer.setColor(Color.GREEN);
+			//			shapeRenderer.rect(p.getBoundingRectangle().x, p.getBoundingRectangle().y, p.getBoundingRectangle().width, p.getBoundingRectangle().height);
 		}
 	}
 
@@ -105,9 +105,10 @@ public class GameRenderer {
 		// Begin ShapeRenderer
 		shapeRenderer.begin(ShapeType.Filled);
 
-		// Draw Background color
+		// Draw Background color and projectiles
 		shapeRenderer.setColor(0 / 255.0f, 0 / 255.0f, 0 / 255.0f, 1);
 		shapeRenderer.rect(0, 0, 136, gameHeight);
+		drawProjectiles();
 		shapeRenderer.end();
 
 		// Begin SpriteBatch
@@ -115,18 +116,79 @@ public class GameRenderer {
 		drawBackgrounds();
 		drawBombs(runTime);
 		batcher.draw(jetImage, jet.getX(), jet.getY(), jet.getWidth(), jet.getHeight());
+
+
+		if (myWorld.isReady()) {
+			// Draw shadow first
+			AssetLoader.shadow.draw(batcher, "Tap to shoot", (136 / 2)
+					- (60), 70);
+			// Draw text
+			AssetLoader.font.draw(batcher, "Tap to shoot", (136 / 2)
+					- (60 - 1), 69);
+			// Draw shadow first
+			AssetLoader.shadow.draw(batcher, "Don't let the", (136 / 2)
+					- (60), 99);
+			// Draw text
+			AssetLoader.font.draw(batcher, "Don't let the", (136 / 2)
+					- (60 - 1), 100);
+			// Draw shadow first
+			AssetLoader.shadow.draw(batcher, "bombs pass!", (136 / 2)
+					- (55), 120);
+			// Draw text
+			AssetLoader.font.draw(batcher, "bombs pass!", (136 / 2)
+			        - (55 - 1), 121);
+		} else {
+
+			if (myWorld.isGameOver() || myWorld.isHighScore()) {
+				if (myWorld.isGameOver()) {
+					AssetLoader.shadow.draw(batcher, "Game Over", 25, 56);
+					AssetLoader.font.draw(batcher, "Game Over", 24, 55);
+
+					AssetLoader.shadow.draw(batcher, "High Score:", 23, 106);
+					AssetLoader.font.draw(batcher, "High Score:", 22, 105);
+
+					String highScore = AssetLoader.getHighScore() + "";
+
+					// Draw shadow first
+					AssetLoader.shadow.draw(batcher, highScore, (136 / 2)
+							- (3 * highScore.length()), 128);
+					// Draw text
+					AssetLoader.font.draw(batcher, highScore, (136 / 2)
+							- (3 * highScore.length() - 1), 127);
+				} 
+				else {
+					AssetLoader.shadow.draw(batcher, "High Score!", 19, 56);
+					AssetLoader.font.draw(batcher, "High Score!", 18, 55);
+				}
+
+				AssetLoader.shadow.draw(batcher, "Try again?", 23, 86);
+				AssetLoader.font.draw(batcher, "Try again?", 24, 85);
+
+				// Convert integer into String
+				String score = myWorld.getScore() + "";
+
+				// Draw shadow first
+				AssetLoader.shadow.draw(batcher, score,
+						(136 / 2) - (3 * score.length()), 12);
+				// Draw text
+				AssetLoader.font.draw(batcher, score,
+						(136 / 2) - (3 * score.length() - 1), 11);
+
+			}
+
+			// Convert integer into String
+			String score = myWorld.getScore() + "";
+
+			// Draw shadow first
+			AssetLoader.shadow.draw(batcher, "" + myWorld.getScore(), (136 / 2)
+					- (3 * score.length()), 12);
+			// Draw text
+			AssetLoader.font.draw(batcher, "" + myWorld.getScore(), (136 / 2)
+					- (3 * score.length() - 1), 11);
+		}
 		batcher.end();
 		shapeRenderer.begin(ShapeType.Filled);
 		drawProjectiles();
 		shapeRenderer.end();
-
-		//drawing bounding circles and Rectangles
-//		shapeRenderer.begin(ShapeType.Filled);
-//		shapeRenderer.setColor(Color.GREEN);
-//		shapeRenderer.circle(jet.getBoundingCircle().x,jet.getBoundingCircle().y, jet.getBoundingCircle().radius);
-//		shapeRenderer.rect(bomb1.getBoundingRectangle().x,bomb1.getBoundingRectangle().y, bomb1.getBoundingRectangle().width, bomb1.getBoundingRectangle().height);
-//		shapeRenderer.rect(bomb2.getBoundingRectangle().x,bomb2.getBoundingRectangle().y, bomb2.getBoundingRectangle().width, bomb2.getBoundingRectangle().height);
-//		shapeRenderer.rect(bomb3.getBoundingRectangle().x,bomb3.getBoundingRectangle().y, bomb3.getBoundingRectangle().width, bomb3.getBoundingRectangle().height);
-//		shapeRenderer.end();
 	}
 }

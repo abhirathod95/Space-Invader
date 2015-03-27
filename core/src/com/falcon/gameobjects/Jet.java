@@ -5,50 +5,54 @@ import java.util.ArrayList;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.math.Circle;
 import com.badlogic.gdx.math.Vector2;
+import com.falcon.gameworld.GameWorld;
 import com.falcon.zbhelpers.AssetLoader;
 
 public class Jet {
 	private Vector2 position;
+	public Vector2 velocity;
 	private int width, height, deviceAngle;
 	private ArrayList<Projectile> projectiles = new ArrayList<Projectile>();
 	private Circle boundingCircle;
+	private boolean isAlive;
+	private GameWorld myWorld;
 
 
-	public Jet(float x, float y, int width, int height) {
+	public Jet(GameWorld myWorld, float x, float y, int width, int height) {
+		this.myWorld = myWorld;
 		this.width = width;
 		this.height = height;
+		velocity = new Vector2();
 		position = new Vector2(x, y);
 		boundingCircle = new Circle();
+		isAlive = true;
 	}
 
 	public void update(float delta) {
+		position.add(velocity.cpy().scl(delta));
 		if(position.x < 0)
 			position.x = 0;
 		else if(position.x > 111)
 			position.x = 111;
 		
-		deviceAngle = Gdx.input.getRotation();
-		
-		if(deviceAngle < 0)
-			moveLeft();
-		else if (deviceAngle > 0)
-			moveRight();
-		
-		
 		boundingCircle.set(position.x+13, position.y+13, 13);
 	}
 
 	public void shoot() {
+		if(isAlive) {
 		Projectile p = new Projectile((position.x + 10), position.y - 5);
 		projectiles.add(p);
 		AssetLoader.shoot.play();
+		}
 	}
 
 	public void moveLeft() {
+		if(isAlive && myWorld.isRunning()) 
 		position.x -= 10;
 	}
 
 	public void moveRight() {
+		if(isAlive && myWorld.isRunning()) 
 		position.x += 10;
 	}
 	
@@ -56,6 +60,20 @@ public class Jet {
 		projectiles.clear();
 	}
 
+	public boolean isAlive() {
+		return isAlive;
+	}
+	
+	public void die() {
+		isAlive = false;
+	}
+	
+	public void onRestart(int y) {
+		position.x = 56;
+		position.y = y;
+		isAlive = true;
+	}
+	
 	public float getX() {
 		return position.x;
 	}

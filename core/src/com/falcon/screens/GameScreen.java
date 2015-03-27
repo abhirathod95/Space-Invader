@@ -1,5 +1,6 @@
 package com.falcon.screens;
 
+import com.badlogic.gdx.Application.ApplicationType;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
 import com.falcon.gameworld.GameRenderer;
@@ -23,7 +24,7 @@ public class GameScreen implements Screen {
 		world = new GameWorld(midBottomY);
 		renderer = new GameRenderer(world, (int) gameHeight);
 
-		Gdx.input.setInputProcessor(new InputHandler(world.getJet()));
+		Gdx.input.setInputProcessor(new InputHandler(world));
 	}
 
 	@Override
@@ -31,7 +32,9 @@ public class GameScreen implements Screen {
 		// Covert Frame rate to String, print it
 		Gdx.app.log("GameScreen FPS", (1/delta) + "");
 		runTime++;
-		world.update(delta, runTime);  //updates the world
+		ApplicationType appType = Gdx.app.getType();
+		if (appType == ApplicationType.Android)
+			world.update(delta, runTime, Gdx.input.getAccelerometerX());  //updates the world
 		renderer.render(runTime);    //paints the updated world
 	}
 

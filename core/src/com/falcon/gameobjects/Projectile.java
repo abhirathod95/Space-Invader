@@ -12,7 +12,7 @@ public class Projectile {
 	public boolean visible;
 	private Rectangle boundingRectangle;
 
-	private static final int SPEEDY = -20;
+	private static final int SPEEDY = -80;
 	private static final int WIDTH = 5;
 	private static final int HEIGHT = 5;
 
@@ -25,7 +25,7 @@ public class Projectile {
 
 	public void update(float delta){
 		position.add(velocity.cpy().scl(delta));
-		if (position.y < 0) {
+		if (position.y < 110) {
 			visible = false;
 		}
 		boundingRectangle.set(position.x, position.y, WIDTH, HEIGHT);
@@ -64,5 +64,4 @@ public class Projectile {
 	public Rectangle getBoundingRectangle() {
 		return boundingRectangle;
 	}
-
 }

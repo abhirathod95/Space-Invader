@@ -22,6 +22,11 @@ public class Bomb extends Scrollable {
 		boundingRectangle.set(position.x, position.y, 20, 20);
 	}
 
+	public void onRestart(float y, float scrollSpeed) {
+		velocity.y = scrollSpeed;
+		reset(y);
+	}
+
 	@Override
 	public void reset(float newY) {
 		// Call the reset method in the superclass (Scrollable)
@@ -33,11 +38,11 @@ public class Bomb extends Scrollable {
 	public boolean collides(Jet jet) {
 		return (Intersector.overlaps(jet.getBoundingCircle(), boundingRectangle));
 	}
-	
+
 	public boolean collidesProjectile(Projectile laser) {
 		return (Intersector.overlaps(laser.getBoundingRectangle(), boundingRectangle));
 	}
-	
+
 	public Rectangle getBoundingRectangle() {
 		return boundingRectangle;
 	}

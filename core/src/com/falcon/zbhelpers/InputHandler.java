@@ -1,18 +1,18 @@
 package com.falcon.zbhelpers;
 
-import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputProcessor;
 import com.falcon.gameobjects.Jet;
+import com.falcon.gameworld.GameWorld;
 
 public class InputHandler implements InputProcessor {
 
 	private Jet myJet;
-	private boolean keyReleased;
+	private GameWorld myWorld;
 
-	public InputHandler(Jet jet) {
-		this.myJet = jet;
-		keyReleased = false;
+	public InputHandler(GameWorld myWorld) {
+		this.myWorld = myWorld;
+		this.myJet = myWorld.getJet();
 	}
 
 	@Override
@@ -37,7 +37,15 @@ public class InputHandler implements InputProcessor {
 
 	@Override
 	public boolean touchDown(int screenX, int screenY, int pointer, int button) {
+		if (myWorld.isReady()) {
+            myWorld.start();
+        }
 		myJet.shoot();
+		if (myWorld.isGameOver() || myWorld.isHighScore()) {
+            // Reset all variables, go to GameState.READY
+            myWorld.restart();
+        }	
+        	
 		return true;
 	}
 
