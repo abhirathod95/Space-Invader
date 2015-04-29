@@ -2,7 +2,6 @@ package com.falcon.gameobjects;
 
 import java.util.ArrayList;
 
-import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.math.Circle;
 import com.badlogic.gdx.math.Vector2;
 import com.falcon.gameworld.GameWorld;
@@ -11,7 +10,7 @@ import com.falcon.zbhelpers.AssetLoader;
 public class Jet {
 	private Vector2 position;
 	public Vector2 velocity;
-	private int width, height, deviceAngle;
+	private int width, height;
 	private ArrayList<Projectile> projectiles = new ArrayList<Projectile>();
 	private Circle boundingCircle;
 	private boolean isAlive;
@@ -29,33 +28,37 @@ public class Jet {
 	}
 
 	public void update(float delta) {
-		position.add(velocity.cpy().scl(delta));
+		if(isAlive)
+			position.add(velocity.cpy().scl(delta));
 		if(position.x < 0)
 			position.x = 0;
-		else if(position.x > 111)
-			position.x = 111;
-		
-		boundingCircle.set(position.x+13, position.y+13, 13);
+		else if(position.x > 136 - width)
+			position.x = 136 - width;
+
+		boundingCircle.set(position.x+17, position.y+17, 15);
+	}
+
+	public void updateReady(float runTime) {
 	}
 
 	public void shoot() {
-		if(isAlive) {
-		Projectile p = new Projectile((position.x + 10), position.y - 5);
-		projectiles.add(p);
-		AssetLoader.shoot.play();
+		if(isAlive && projectiles.size() < 10) {
+			Projectile p = new Projectile((position.x + 10), position.y - 5);
+			projectiles.add(p);
+			AssetLoader.shoot.play();
 		}
 	}
 
 	public void moveLeft() {
 		if(isAlive && myWorld.isRunning()) 
-		position.x -= 10;
+			position.x -= 10;
 	}
 
 	public void moveRight() {
 		if(isAlive && myWorld.isRunning()) 
-		position.x += 10;
+			position.x += 10;
 	}
-	
+
 	public void clearAllProjectiles() {
 		projectiles.clear();
 	}
@@ -63,17 +66,17 @@ public class Jet {
 	public boolean isAlive() {
 		return isAlive;
 	}
-	
+
 	public void die() {
 		isAlive = false;
 	}
-	
+
 	public void onRestart(int y) {
 		position.x = 56;
 		position.y = y;
 		isAlive = true;
 	}
-	
+
 	public float getX() {
 		return position.x;
 	}

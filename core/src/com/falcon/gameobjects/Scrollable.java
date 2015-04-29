@@ -8,7 +8,7 @@ public class Scrollable {
 	protected Vector2 position, velocity, accel;
 	protected int width;
 	protected int height;
-	protected boolean isScrolledDown;
+	protected boolean isScrolledDown, stopped;
 
 	public Scrollable(float x, float y, int width, int height, float scrollSpeed) {
 		position = new Vector2(x, y);
@@ -17,12 +17,14 @@ public class Scrollable {
 		this.width = width;
 		this.height = height;
 		isScrolledDown = false;
+		stopped = false;
 	}
 
 	public void update(float delta) {
+		if(!stopped) {
 		velocity.add(accel.cpy().scl(delta));
 		position.add(velocity.cpy().scl(delta));
-		
+		}
 		// If the Scrollable object is no longer visible:
 		if (position.y > 204) {
 			isScrolledDown = true;
@@ -41,6 +43,7 @@ public class Scrollable {
 	
 	public void stop() {
 	    velocity.y = 0;
+	    stopped = true;
 	}
 	
 	// Getters for instance variables

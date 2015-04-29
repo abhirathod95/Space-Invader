@@ -1,5 +1,6 @@
 package com.falcon.zbhelpers;
 
+
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputProcessor;
 import com.falcon.gameobjects.Jet;
@@ -13,15 +14,26 @@ public class InputHandler implements InputProcessor {
 	public InputHandler(GameWorld myWorld) {
 		this.myWorld = myWorld;
 		this.myJet = myWorld.getJet();
+
+
 	}
 
 	@Override
 	public boolean keyDown(int keycode) {
-		if(keycode == Input.Keys.A)
-			myJet.moveLeft();
-		else if(keycode == Input.Keys.D)
-			myJet.moveRight();
-		return true;
+		if (keycode == Input.Keys.SPACE) {
+
+			if (myWorld.isReady()) {
+				myWorld.start();
+			}
+
+		}
+		if(myWorld.isRunning()) {
+			if(keycode == Input.Keys.A)
+				myJet.moveLeft();
+			else if(keycode == Input.Keys.D)
+				myJet.moveRight();
+		}
+		return false;
 	}
 
 	@Override
@@ -37,21 +49,20 @@ public class InputHandler implements InputProcessor {
 
 	@Override
 	public boolean touchDown(int screenX, int screenY, int pointer, int button) {
-		if (myWorld.isReady()) {
-            myWorld.start();
-        }
-		myJet.shoot();
-		if (myWorld.isGameOver() || myWorld.isHighScore()) {
-            // Reset all variables, go to GameState.READY
-            myWorld.restart();
-        }	
-        	
+
+		if(pointer == 0) {
+			if (myWorld.isReady()) {
+				myWorld.start();
+				myJet.shoot();
+			} else if (myWorld.isRunning()) {
+				myJet.shoot();
+			}
+		}
 		return true;
 	}
 
 	@Override
 	public boolean touchUp(int screenX, int screenY, int pointer, int button) {
-		// TODO Auto-generated method stub
 		return false;
 	}
 
@@ -71,5 +82,4 @@ public class InputHandler implements InputProcessor {
 		// TODO Auto-generated method stub
 		return false;
 	}
-
 }

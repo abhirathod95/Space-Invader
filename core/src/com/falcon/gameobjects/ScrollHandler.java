@@ -4,14 +4,17 @@ import java.util.ArrayList;
 import java.util.ListIterator;
 import java.util.Random;
 
+import com.falcon.gameobjects.Met;
+
 
 public class ScrollHandler {
 
 	// ScrollHandler will create all objects that we need.
 	private Background background1, background2, background3;
-	public ArrayList<Bomb> bombs;
+	public ArrayList<Met> mets;
 	private int numOfBombs;
-	private boolean scrolledOut;
+	private boolean scrolledOut, isHit;
+	private float scrolledX, scrolledY;
 	private Random r;
 
 
@@ -21,41 +24,62 @@ public class ScrollHandler {
 
 	public ScrollHandler(int numOfBombs) {
 		this.numOfBombs = numOfBombs;
-		background1 = new Background(0, 0, 136, 204, SCROLL_SPEED);
-		background2 = new Background(0, -136, 136, 204, SCROLL_SPEED);
-		background3 = new Background(0, -272, 136, 204, SCROLL_SPEED);
-		bombs = new ArrayList<Bomb>();
+		background1 = new Background(0, 0, 160, 1570, SCROLL_SPEED);
+		background2 = new Background(0, -1570, 160, 1570, SCROLL_SPEED);
+		background3 = new Background(0, -3140, 160, 1570, SCROLL_SPEED);
+		mets = new ArrayList<Met>();
 		r = new Random();
 		for(int i = 0; i < this.numOfBombs; i++) {
-			bombs.add(new Bomb(r.nextInt(6) * 20, -1 * r.nextInt(10) * 20, 20, 20, SCROLL_SPEED));
+			mets.add(new Met(r.nextInt(5) * 25, -1 * r.nextInt(5) * 50, 15, 40, SCROLL_SPEED));
 		}
 		scrolledOut = false;
 	}
+	
+	public void updateReady(float delta) {
+		background1.backgroundReady();
+		background2.backgroundReady();
+		background3.backgroundReady();
+		
+		background1.update(delta);
+		background2.update(delta);
+		background3.update(delta);
+		
+		if (background1.isScrolledDown()) {
+			background1.reset(-3200);
+		} else if (background2.isScrolledDown()) {
+			background2.reset(-3200);
+
+		} else if (background3.isScrolledDown()) {
+			background3.reset(-3200);
+		}
+	}
 
 	public void update(float delta) {
-
+		background1.backgroundGo();
+		background2.backgroundGo();
+		background3.backgroundGo();
+		
+		
 		// Update our objects
 		background1.update(delta);
 		background2.update(delta);
 		background3.update(delta);
 
-		// update bombs and check if any bombs have been missed, if so end the game
-		for(ListIterator<Bomb> iter = bombs.listIterator(); iter.hasNext();) {
-			Bomb bomb = iter.next();
-			if(bomb.isScrolledDown())
-				scrolledOut = true;
-			bomb.update(delta);
+		// update mets and check if any mets have been missed, if so end the game
+		for(ListIterator<Met> iter = mets.listIterator(); iter.hasNext();) {
+			Met met = iter.next();
+			met.update(delta);
 		}
 
 		// Check if any of the backgrounds are scrolled down,
 		// and reset accordingly
 		if (background1.isScrolledDown()) {
-			background1.reset(-272);
+			background1.reset(-3140);
 		} else if (background2.isScrolledDown()) {
-			background2.reset(-272);
+			background2.reset(-3140);
 
 		} else if (background3.isScrolledDown()) {
-			background3.reset(-272);
+			background3.reset(-3140);
 		}
 	}
 
@@ -64,30 +88,29 @@ public class ScrollHandler {
 		background1.stop();
 		background2.stop();
 		background3.stop();
-		for(ListIterator<Bomb> iter = bombs.listIterator(); iter.hasNext();) {
+		for(ListIterator<Met> iter = mets.listIterator(); iter.hasNext();) {
 			iter.next().stop();
 		}
 	}
 
-	// Return true if ANY bombs hits the jet.
-	public boolean collides(Jet jet) {
-		for(ListIterator<Bomb> iter = bombs.listIterator(); iter.hasNext();) {
-			if(iter.next().collides(jet)) {
+	// Return true if ANY mets hits the jet.
+	public boolean collides(Jet jet, MotherShip ship) {
+		for(ListIterator<Met> iter = mets.listIterator(); iter.hasNext();) {
+			Met met = iter.next();
+			if(met.collides(jet)) {
+				met.dead = true;
+				isHit = true;
+				return true;
+			}
+			if(met.collidesShip(ship)) {
+				met.dead = true;
+				scrolledOut = true;
+				scrolledX = met.getX();
+				scrolledY = met.getY();
 				return true;
 			}
 		}
 		return false;	
-	}
-
-	public void onRestart() {
-		background1.onRestart(0, SCROLL_SPEED);
-		background2.onRestart(-136, SCROLL_SPEED);
-		background3.onRestart(-272, SCROLL_SPEED);
-		for(ListIterator<Bomb> iter = bombs.listIterator(); iter.hasNext();) {
-			Bomb bomb = iter.next();
-			bomb.onRestart(-1 * r.nextInt(10) * 20, SCROLL_SPEED);
-		}
-		scrolledOut = false;
 	}
 
 	// The getters for the variables
@@ -102,13 +125,25 @@ public class ScrollHandler {
 	public Background getBackground3() {
 		return background3;
 	}
+	
+	public boolean isHit() {
+		return isHit;
+	}
+	
 
-	public Bomb getBomb(int index) {
-		return bombs.get(index);
+	public Met getMet(int index) {
+		return mets.get(index);
 	}
 
 	public boolean scrolledOut() {
 		return scrolledOut;
 	}
 	
+	public float getScrolledX() {
+		return scrolledX;
+	}
+	
+	public float getScrolledY() {
+		return scrolledY;
+	}	
 }

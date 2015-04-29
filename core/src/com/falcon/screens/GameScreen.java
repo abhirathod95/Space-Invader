@@ -1,46 +1,40 @@
 package com.falcon.screens;
 
-import com.badlogic.gdx.Application.ApplicationType;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
+import com.badlogic.gdx.utils.viewport.StretchViewport;
 import com.falcon.gameworld.GameRenderer;
 import com.falcon.gameworld.GameWorld;
+import com.falcon.starshipinvader.SIGame;
 import com.falcon.zbhelpers.InputHandler;
 
 public class GameScreen implements Screen {
 
+	private final SIGame game;
 	private GameWorld world;
 	private GameRenderer renderer;
 	private float runTime;
+	private StretchViewport viewport;
 
-	public GameScreen() {
-		float screenWidth = Gdx.graphics.getWidth();
-		float screenHeight = Gdx.graphics.getHeight();
-		float gameWidth = 136;
-		float gameHeight = screenHeight / (screenWidth / gameWidth);
-		runTime = 0;
-		int midBottomY = (int) ((gameHeight / 4) * 3);
-
-		world = new GameWorld(midBottomY);
-		renderer = new GameRenderer(world, (int) gameHeight);
-
+	public GameScreen(SIGame game) {
+		this.game = game;
+		int midBottomY = 153;
+		viewport = game.getport();
+		world = new GameWorld(midBottomY, game);
 		Gdx.input.setInputProcessor(new InputHandler(world));
+		renderer = new GameRenderer(world, game);
 	}
 
 	@Override
 	public void render(float delta) {
-		// Covert Frame rate to String, print it
-		Gdx.app.log("GameScreen FPS", (1/delta) + "");
 		runTime++;
-		ApplicationType appType = Gdx.app.getType();
-		if (appType == ApplicationType.Android)
-			world.update(delta, runTime, Gdx.input.getAccelerometerX());  //updates the world
-		renderer.render(runTime);    //paints the updated world
+		world.update(delta, Gdx.input.getAccelerometerX());  //updates the world
+		renderer.render(delta, runTime);    //paints the updated world
 	}
 
 	@Override
 	public void resize(int width, int height) {
-		Gdx.app.log("GameScreen", "resizing");
+		viewport.update(width, height);
 	}
 
 	@Override
@@ -62,9 +56,9 @@ public class GameScreen implements Screen {
 	public void resume() {
 		Gdx.app.log("GameScreen", "resume called");       
 	}
-
+	
 	@Override
 	public void dispose() {
-		// Leave blank
+		
 	}
 }

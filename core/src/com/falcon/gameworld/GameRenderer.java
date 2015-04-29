@@ -6,57 +6,64 @@ import java.util.ListIterator;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
-import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer.ShapeType;
+import com.badlogic.gdx.scenes.scene2d.ui.Image;
+import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.falcon.gameobjects.Background;
-import com.falcon.gameobjects.Bomb;
+import com.falcon.gameobjects.Met;
 import com.falcon.gameobjects.Jet;
+import com.falcon.gameobjects.MotherShip;
 import com.falcon.gameobjects.Projectile;
 import com.falcon.gameobjects.ScrollHandler;
 import com.falcon.zbhelpers.AssetLoader;
+import com.falcon.starshipinvader.SIGame;
 
 public class GameRenderer {
 
+	private SIGame game;
 	private GameWorld myWorld;
-	private OrthographicCamera cam;
 	private ShapeRenderer shapeRenderer;
 	private SpriteBatch batcher;
-	private int gameHeight;
 
+	private float sum;
+
+	//game objects
 	private Jet jet;
+	private MotherShip ship;
 	private ScrollHandler scroller;
 	private Background background1, background2, background3;
-	private TextureRegion jetImage;
-	private Texture background1Image, background2Image, background3Image;
-	private Animation bombAnimation; 
 	private ArrayList<Projectile> projectiles; 
-	private ArrayList<Bomb> bombs;
+	private ArrayList<Met> mets;
 
-	public GameRenderer(GameWorld world, int gameHeight) {
+	//game assets
+	private TextureRegion jetImage, ready, motherShip;
+	private Texture background1Image, background2Image, background3Image;
+	private Animation metAnimation, expAnimation; 
+	private TextureAtlas buttons;
+
+
+	public GameRenderer(GameWorld world, SIGame game) {
 		this.myWorld = world;
-		this.gameHeight = gameHeight;
+		this.game = game;
 		scroller = world.getScroller();
-		cam = new OrthographicCamera();
-		cam.setToOrtho(true, 136, gameHeight);
-
-		batcher = new SpriteBatch();
-		// Attach batcher to camera
-		batcher.setProjectionMatrix(cam.combined);
-		shapeRenderer = new ShapeRenderer();
-		shapeRenderer.setProjectionMatrix(cam.combined);
-
+		batcher = game.getBatch() ;
+		this.shapeRenderer = game.getRenderer();
+		sum = 0f;
 		initGameObjects();
 		initAssets();
 	}
 
+
 	private void initGameObjects() {
 		jet = myWorld.getJet();
-		bombs = scroller.bombs;
+		ship = myWorld.getShip();
+		mets = scroller.mets;
 		background1 = scroller.getBackground1();
 		background2 = scroller.getBackground2();
 		background3 = scroller.getBackground3();
@@ -65,17 +72,25 @@ public class GameRenderer {
 
 	private void initAssets() {
 		jetImage = AssetLoader.jet;
+		motherShip = AssetLoader.motherShip;
 		background1Image = AssetLoader.bg1;
 		background2Image = AssetLoader.bg2;
 		background3Image = AssetLoader.bg3;
-		bombAnimation = AssetLoader.bombAnimation;
+		metAnimation = AssetLoader.metAnimation;
+		expAnimation = AssetLoader.expAnimation;
+		buttons = new TextureAtlas(Gdx.files.internal("data/skins/buttons.pack"), false);	
+		ready = new TextureRegion(buttons.findRegion("ready"));
+		ready.flip(false, true);
+
 	}
 
-	private void drawBombs(float runTime) {
-		for(ListIterator<Bomb> iter = bombs.listIterator(); iter.hasNext();) {
-			Bomb bomb = (Bomb) iter.next();
-			batcher.draw(bombAnimation.getKeyFrame(runTime), bomb.getX(), bomb.getY(), 
-					bomb.getWidth(), bomb.getHeight());
+	private void drawMets(float runTime) {
+		for(ListIterator<Met> iter = mets.listIterator(); iter.hasNext();) {
+			Met met = (Met) iter.next();
+			//			batcher.draw(metAnimation.getKeyFrame(runTime), met.getX(), met.getY(), 
+			//					met.getWidth(), met.getHeight());
+			if(!met.dead) 
+				batcher.draw(AssetLoader.missile, met.getX(), met.getY(), met.getWidth(), met.getHeight());
 		}
 	}
 
@@ -89,106 +104,100 @@ public class GameRenderer {
 	private void drawProjectiles() {
 		for(ListIterator<Projectile> iter = projectiles.listIterator(); iter.hasNext();) {
 			Projectile p = (Projectile) iter.next();
-			shapeRenderer.setColor(255 / 255.0f, 255 / 255.0f, 0 / 255.0f, 1);
-			shapeRenderer.rect(p.getX(), p.getY(), p.getWidth(), p.getHeight());
-
-			//			Draws  the bounding rectangles for the projectiles
-			//			shapeRenderer.setColor(Color.GREEN);
-			//			shapeRenderer.rect(p.getBoundingRectangle().x, p.getBoundingRectangle().y, p.getBoundingRectangle().width, p.getBoundingRectangle().height);
+			batcher.draw(AssetLoader.laser, p.getX(), p.getY(), p.getWidth(), p.getHeight());
 		}
 	}
 
-	public void render(float runTime) {		
+	private void drawJet() {
+		if(jet.isAlive() || !scroller.isHit()) {
+			if(jet.velocity.x > 1) {
+				batcher.draw(AssetLoader.jetL1, jet.getX(), jet.getY(), jet.getWidth(), jet.getHeight());
+			}
+			else if(jet.velocity.x < -1) {
+				batcher.draw(AssetLoader.jetR1, jet.getX(), jet.getY(), jet.getWidth(), jet.getHeight());
+			}
+			else
+				batcher.draw(jetImage, jet.getX(), jet.getY(), jet.getWidth(), jet.getHeight());
+		}
+	}
+
+	private void drawMotherShip() {
+		batcher.draw(motherShip, -10, 184, 160, 80);
+	}
+
+	private void drawExplosions(float delta) {
+		if(myWorld.isIntersec()){
+			sum += delta;
+			if(scroller.getScrolledY() != 0) {
+				batcher.draw(expAnimation.getKeyFrame(sum),
+						scroller.getScrolledX() - 20, scroller.getScrolledY(), 50, 50);
+			}
+			if(scroller.isHit())
+				batcher.draw(expAnimation.getKeyFrame(sum),
+						jet.getX() , jet.getY(), 30, 30);
+			if(expAnimation.isAnimationFinished((float) (sum)) || myWorld.isReady()){               
+				myWorld.setIntersec();
+				sum = 0;
+			}
+		}
+	}
+
+	private void drawReady() {
+		batcher.draw(ready, 36, myWorld.getMidBottomY() - 50, 68, 14);
+	}
+
+	private void drawScore() {
+		// Convert integer into String
+		String score = myWorld.getScore() + "";
+
+		// Draw shadow first
+		AssetLoader.shadow.draw(batcher, "" + myWorld.getScore(), (136 / 2)
+				- (3 * score.length()), 12);
+		// Draw text
+		AssetLoader.font.draw(batcher, "" + myWorld.getScore(), (136 / 2)
+				- (3 * score.length() - 1), 11);
+
+	}
+
+	public void render(float delta, float runTime) {		
+		batcher.setProjectionMatrix(game.getCam().projection);
+		batcher.setTransformMatrix(game.getCam().view);
+		shapeRenderer.setProjectionMatrix(game.getCam().projection);
+		shapeRenderer.setTransformMatrix(game.getCam().view);
 		Gdx.gl.glClearColor(0, 0, 0, 1);
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
-		// Begin ShapeRenderer
-		shapeRenderer.begin(ShapeType.Filled);
-
-		// Draw Background color and projectiles
-		shapeRenderer.setColor(0 / 255.0f, 0 / 255.0f, 0 / 255.0f, 1);
-		shapeRenderer.rect(0, 0, 136, gameHeight);
-		drawProjectiles();
-		shapeRenderer.end();
-
 		// Begin SpriteBatch
 		batcher.begin();
+		batcher.setColor(Color.WHITE);
 		drawBackgrounds();
-		drawBombs(runTime);
-		batcher.draw(jetImage, jet.getX(), jet.getY(), jet.getWidth(), jet.getHeight());
-
-
-		if (myWorld.isReady()) {
-			// Draw shadow first
-			AssetLoader.shadow.draw(batcher, "Tap to shoot", (136 / 2)
-					- (60), 70);
-			// Draw text
-			AssetLoader.font.draw(batcher, "Tap to shoot", (136 / 2)
-					- (60 - 1), 69);
-			// Draw shadow first
-			AssetLoader.shadow.draw(batcher, "Don't let the", (136 / 2)
-					- (60), 99);
-			// Draw text
-			AssetLoader.font.draw(batcher, "Don't let the", (136 / 2)
-					- (60 - 1), 100);
-			// Draw shadow first
-			AssetLoader.shadow.draw(batcher, "bombs pass!", (136 / 2)
-					- (55), 120);
-			// Draw text
-			AssetLoader.font.draw(batcher, "bombs pass!", (136 / 2)
-			        - (55 - 1), 121);
-		} else {
-
-			if (myWorld.isGameOver() || myWorld.isHighScore()) {
-				if (myWorld.isGameOver()) {
-					AssetLoader.shadow.draw(batcher, "Game Over", 25, 56);
-					AssetLoader.font.draw(batcher, "Game Over", 24, 55);
-
-					AssetLoader.shadow.draw(batcher, "High Score:", 23, 106);
-					AssetLoader.font.draw(batcher, "High Score:", 22, 105);
-
-					String highScore = AssetLoader.getHighScore() + "";
-
-					// Draw shadow first
-					AssetLoader.shadow.draw(batcher, highScore, (136 / 2)
-							- (3 * highScore.length()), 128);
-					// Draw text
-					AssetLoader.font.draw(batcher, highScore, (136 / 2)
-							- (3 * highScore.length() - 1), 127);
-				} 
-				else {
-					AssetLoader.shadow.draw(batcher, "High Score!", 19, 56);
-					AssetLoader.font.draw(batcher, "High Score!", 18, 55);
-				}
-
-				AssetLoader.shadow.draw(batcher, "Try again?", 23, 86);
-				AssetLoader.font.draw(batcher, "Try again?", 24, 85);
-
-				// Convert integer into String
-				String score = myWorld.getScore() + "";
-
-				// Draw shadow first
-				AssetLoader.shadow.draw(batcher, score,
-						(136 / 2) - (3 * score.length()), 12);
-				// Draw text
-				AssetLoader.font.draw(batcher, score,
-						(136 / 2) - (3 * score.length() - 1), 11);
-
-			}
-
-			// Convert integer into String
-			String score = myWorld.getScore() + "";
-
-			// Draw shadow first
-			AssetLoader.shadow.draw(batcher, "" + myWorld.getScore(), (136 / 2)
-					- (3 * score.length()), 12);
-			// Draw text
-			AssetLoader.font.draw(batcher, "" + myWorld.getScore(), (136 / 2)
-					- (3 * score.length() - 1), 11);
-		}
-		batcher.end();
-		shapeRenderer.begin(ShapeType.Filled);
+		
+		//batcher.end();
+		//draw bounding circles and rects for everything
+		//		shapeRenderer.begin(ShapeType.Filled);
+		//		for(ListIterator<Met> iter = mets.listIterator(); iter.hasNext();) {
+		//			Met met = (Met) iter.next();
+		//			shapeRenderer.rect(met.getBoundingRectangle().x, met.getBoundingRectangle().y, met.getBoundingRectangle().width, met.getBoundingRectangle().height);
+		//		}
+		//		shapeRenderer.circle(ship.getBoundingCircle().x, ship.getBoundingCircle().y, ship.getBoundingCircle().radius);
+		//		shapeRenderer.circle(jet.getBoundingCircle().x, jet.getBoundingCircle().y, jet.getBoundingCircle().radius);
+		//		shapeRenderer.end();
+		//batcher.begin();
+		
+		if (myWorld.isRunning()) {
+			drawMets(runTime);
+			drawJet();
+			drawMotherShip();
+			drawExplosions(delta);
+			drawScore();
+		} else if (myWorld.isReady()) {
+			drawJet();
+			drawMotherShip();
+			drawReady();
+		} 
 		drawProjectiles();
-		shapeRenderer.end();
+		batcher.end();	
+
+
 	}
 }

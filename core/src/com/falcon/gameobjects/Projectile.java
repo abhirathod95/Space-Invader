@@ -1,8 +1,5 @@
 package com.falcon.gameobjects;
 
-import java.util.ListIterator;
-
-import com.badlogic.gdx.math.Circle;
 import com.badlogic.gdx.math.Intersector;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
@@ -25,14 +22,14 @@ public class Projectile {
 
 	public void update(float delta){
 		position.add(velocity.cpy().scl(delta));
-		if (position.y < 110) {
+		if (position.y < 80) {
 			visible = false;
 		}
 		boundingRectangle.set(position.x, position.y, WIDTH, HEIGHT);
 	}
 
-	public boolean collides(Bomb bomb) {
-		return (Intersector.overlaps(bomb.getBoundingRectangle(), boundingRectangle));
+	public boolean collides(Met met) {
+		return (Intersector.overlaps(met.getBoundingRectangle(), boundingRectangle));
 	}
 	
 	public float getX() {

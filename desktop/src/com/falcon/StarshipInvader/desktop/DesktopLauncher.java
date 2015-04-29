@@ -8,7 +8,7 @@ public class DesktopLauncher {
 	public static void main (String[] arg) {
 		  LwjglApplicationConfiguration config = new LwjglApplicationConfiguration();
 	        config.title = "Starship Invader";
-	        config.width = 272;
+	        config.width = 262;
 	        config.height = 408;
 	        new LwjglApplication(new SIGame(), config);
 	}

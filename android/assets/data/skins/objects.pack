@@ -1,0 +1,47 @@
+
+objects.png
+format: RGBA8888
+filter: Nearest,Nearest
+repeat: none
+redfighter0001
+  rotate: false
+  xy: 1, 586
+  size: 343, 383
+  orig: 343, 383
+  offset: 0, 0
+  index: -1
+redfighter0005
+  rotate: false
+  xy: 1, 201
+  size: 343, 383
+  orig: 343, 383
+  offset: 0, 0
+  index: -1
+redfighter0009
+  rotate: false
+  xy: 346, 586
+  size: 343, 383
+  orig: 343, 383
+  offset: 0, 0
+  index: -1
+RD1
+  rotate: false
+  xy: 1, 1
+  size: 198, 198
+  orig: 198, 198
+  offset: 0, 0
+  index: -1
+missile
+  rotate: false
+  xy: 346, 443
+  size: 82, 141
+  orig: 82, 141
+  offset: 0, 0
+  index: -1
+laser
+  rotate: false
+  xy: 691, 915
+  size: 9, 54
+  orig: 9, 54
+  offset: 0, 0
+  index: -1
